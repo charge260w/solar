@@ -144,6 +144,53 @@
     border:none;opacity:0;transition:opacity .5s;pointer-events:none;}
   #loader .lstart.ready{opacity:1;pointer-events:auto;}
 
+  /* ---------- 手势 HUD ---------- */
+  #gestureBtn.active .icn{background:var(--accent);color:#02030a;border-color:transparent;
+    box-shadow:0 0 14px rgba(125,180,255,.7);}
+  #ghud{position:fixed;left:18px;bottom:92px;z-index:26;width:200px;
+    border-radius:16px;overflow:hidden;border:1px solid var(--stroke);
+    background:rgba(6,9,22,0.8);backdrop-filter:blur(10px);box-shadow:0 8px 30px rgba(0,0,0,.5);
+    transform:translateY(14px) scale(.96);opacity:0;pointer-events:none;transition:.4s cubic-bezier(.2,.8,.2,1);}
+  #ghud.show{transform:none;opacity:1;}
+  #ghud .gcam{position:relative;width:200px;height:150px;background:#04060f;}
+  #ghud video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    transform:scaleX(-1);opacity:.5;}
+  #ghud canvas{position:absolute;inset:0;width:100%;height:100%;}
+  #gstatus{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;font-size:11px;
+    letter-spacing:1px;color:#cdd8ff;background:linear-gradient(0deg,rgba(4,6,15,.92),transparent);
+    display:flex;align-items:center;gap:7px;}
+  #gstatus .gdot{width:7px;height:7px;border-radius:50%;background:#ff5a5a;box-shadow:0 0 6px #ff5a5a;transition:.3s;}
+  #gstatus .gdot.live{background:#5affa0;box-shadow:0 0 8px #5affa0;}
+  #gmode{margin-left:auto;color:var(--gold);font-weight:600;}
+
+  /* 手势图例 */
+  #glegend{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);z-index:40;
+    width:min(420px,90vw);background:linear-gradient(160deg,rgba(12,16,36,0.95),rgba(6,9,22,0.97));
+    border:1px solid var(--stroke);border-radius:20px;padding:22px 24px;opacity:0;pointer-events:none;
+    transition:.45s cubic-bezier(.2,.8,.2,1);box-shadow:0 24px 70px rgba(0,0,0,.6);}
+  #glegend.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  #glegend h3{margin:0 0 4px;font-size:18px;letter-spacing:1px;
+    background:linear-gradient(90deg,#ffd27a,#7db4ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  #glegend .gsub{font-size:12px;color:var(--muted);margin-bottom:16px;}
+  .grow{display:flex;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid rgba(140,170,255,.08);}
+  .grow .gi{font-size:26px;width:38px;text-align:center;filter:drop-shadow(0 0 6px rgba(125,180,255,.5));}
+  .grow .gt b{display:block;font-size:14px;color:#fff;}
+  .grow .gt span{font-size:12px;color:var(--muted);}
+  #glegend .gok{margin-top:16px;width:100%;padding:11px;border:none;border-radius:14px;cursor:pointer;
+    background:linear-gradient(90deg,#7db4ff,#c89bff);color:#02030a;font-weight:600;letter-spacing:2px;font-size:13px;}
+
+  /* 手势光标 reticle */
+  #reticle{position:fixed;z-index:35;width:46px;height:46px;margin:-23px 0 0 -23px;pointer-events:none;
+    opacity:0;transition:opacity .2s,transform .12s;will-change:transform;}
+  #reticle.show{opacity:1;}
+  #reticle .r-out{position:absolute;inset:0;border:2px solid rgba(125,180,255,.85);border-radius:50%;
+    box-shadow:0 0 12px rgba(125,180,255,.6),inset 0 0 8px rgba(125,180,255,.4);}
+  #reticle .r-in{position:absolute;inset:16px;border-radius:50%;background:rgba(125,180,255,.9);
+    box-shadow:0 0 10px rgba(125,180,255,.9);transition:.12s;}
+  #reticle.pinch .r-out{transform:scale(.62);border-color:#ffd27a;box-shadow:0 0 18px #ffd27a;}
+  #reticle.pinch .r-in{background:#ffd27a;box-shadow:0 0 14px #ffd27a;}
+  #reticle.hot .r-out{border-color:#5affa0;box-shadow:0 0 18px #5affa0;}
+
   @media (max-width:680px){
     #topbar .sub{display:none;}
     #panel{width:100%;max-width:100%;height:62%;top:auto;bottom:0;border-left:none;
@@ -193,10 +240,33 @@
     <div class="toggle on" data-k="labels"><span class="sw"></span>名称</div>
     <div class="toggle" data-k="scale"><span class="sw"></span>比例</div>
     <div class="toggle on" data-k="sound"><span class="sw"></span>声音</div>
+    <div class="toggle on" data-k="music"><span class="sw"></span>音乐</div>
   </div>
   <div class="dock-group">
+    <button class="btn" id="gestureBtn"><span class="icn">✋</span>手势</button>
     <button class="btn" id="resetBtn"><span class="icn">⌂</span>俯瞰</button>
   </div>
+</div>
+
+<div id="ghud">
+  <div class="gcam">
+    <video id="gvideo" playsinline></video>
+    <canvas id="gcanvas" width="200" height="150"></canvas>
+    <div id="gstatus"><span class="gdot" id="gdot"></span><span id="gstatusText">摄像头未开启</span><span id="gmode"></span></div>
+  </div>
+</div>
+
+<div id="reticle"><div class="r-out"></div><div class="r-in"></div></div>
+
+<div id="glegend">
+  <h3>用手势漫游太阳系 ✋</h3>
+  <div class="gsub">对准摄像头，用一只手即可操控。建议光线充足、手部完整入镜。</div>
+  <div class="grow"><div class="gi">🖐️</div><div class="gt"><b>张开手掌 · 移动</b><span>把手当摇杆，左右上下移动 → 旋转视角环绕</span></div></div>
+  <div class="grow"><div class="gi">👆</div><div class="gt"><b>食指指向 · 瞄准</b><span>指尖牵引光标，对准星球即高亮</span></div></div>
+  <div class="grow"><div class="gi">🤏</div><div class="gt"><b>捏合 · 选中飞抵</b><span>拇指与食指相捏 → 飞向所指星球；捏向虚空 → 返回全景</span></div></div>
+  <div class="grow"><div class="gi">🙌</div><div class="gt"><b>双手开合 · 缩放</b><span>两手拉开拉近 → 推近 / 拉远镜头</span></div></div>
+  <div class="grow"><div class="gi">✊</div><div class="gt"><b>握拳 · 冻结时间</b><span>攥拳 → 暂停 / 恢复天体运行</span></div></div>
+  <button class="gok" id="glegendOk">开 始 体 验</button>
 </div>
 
 <div id="hint">拖拽旋转视角，滚轮缩放，点击星球进入</div>
@@ -215,6 +285,8 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
 
 <script>
 /* ============================================================
@@ -549,7 +621,7 @@ let sunMesh,sunMat,beltMesh;
 const bodies=[];        // {data, group, mesh, orbit, labelEl, ...}
 let labelLayer;
 let simTime=0, playing=true, speedFactor=1, focus=null;
-let opts={orbits:true,labels:true,scale:false,sound:true};
+let opts={orbits:true,labels:true,scale:false,sound:true,music:true};
 const clock=new THREE.Clock();
 let flying=null;
 
@@ -934,6 +1006,8 @@ function animate(){
     controls.target.add(delta);camera.position.add(delta);
   }
 
+  if(Gesture&&Gesture.enabled)Gesture.frame(dt);
+
   controls.update();
   updateLabels();
   Audio.update(dt);
@@ -958,14 +1032,33 @@ function updateLabels(){
    程序化声音引擎（WebAudio）
    ============================================================ */
 const Audio=(function(){
-  let ctx,master,droneGain,started=false,pad=[],noiseSrc;
+  let ctx,master,sfxGain,musicGain,reverb,reverbGain,started=false,pad=[],noiseSrc;
+  let chordVoices=[],musicTimer=null,arpTimer=null,curChord=0,lastZoom=0;
   const planetFreq={sun:60,mercury:330,venus:220,earth:264,mars:196,jupiter:88,saturn:110,uranus:147,neptune:73,pluto:392};
+  // 缓慢演进的和弦进行（A小调色彩，空灵）：每个数组为一组和弦音(Hz)
+  const CHORDS=[
+    [220.00,261.63,329.63,392.00,493.88], // Am9
+    [174.61,220.00,261.63,329.63,440.00], // Fmaj7
+    [196.00,246.94,329.63,392.00,440.00], // G6/Em
+    [164.81,220.00,261.63,329.63,392.00]  // Em7
+  ];
+  function makeIR(sec,decay){
+    const len=Math.floor(ctx.sampleRate*sec),b=ctx.createBuffer(2,len,ctx.sampleRate);
+    for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);}
+    return b;
+  }
   function ensure(){
     if(ctx)return;
     ctx=new (window.AudioContext||window.webkitAudioContext)();
     master=ctx.createGain();master.gain.value=0.0;master.connect(ctx.destination);
+    // 空间混响（生成式脉冲响应）
+    reverb=ctx.createConvolver();reverb.buffer=makeIR(3.0,2.4);
+    reverbGain=ctx.createGain();reverbGain.gain.value=0.6;reverb.connect(reverbGain);reverbGain.connect(master);
+    // 两条独立母线：音效 / 音乐
+    sfxGain=ctx.createGain();sfxGain.gain.value=opts.sound?1:0;sfxGain.connect(master);
+    musicGain=ctx.createGain();musicGain.gain.value=0.0;musicGain.connect(master);musicGain.connect(reverb);
     // 低频太空底噪 drone
-    droneGain=ctx.createGain();droneGain.gain.value=0.12;droneGain.connect(master);
+    const droneGain=ctx.createGain();droneGain.gain.value=0.12;droneGain.connect(sfxGain);
     [55,55.3,82.5].forEach((f,i)=>{
       const o=ctx.createOscillator();o.type='sine';o.frequency.value=f;
       const g=ctx.createGain();g.gain.value=0.5/(i+1);
@@ -979,11 +1072,13 @@ const Audio=(function(){
     noiseSrc=ctx.createBufferSource();noiseSrc.buffer=buf;noiseSrc.loop=true;
     const nf=ctx.createBiquadFilter();nf.type='bandpass';nf.frequency.value=400;nf.Q.value=0.6;
     const ng=ctx.createGain();ng.gain.value=0.04;
-    noiseSrc.connect(nf);nf.connect(ng);ng.connect(master);noiseSrc.start();
+    noiseSrc.connect(nf);nf.connect(ng);ng.connect(sfxGain);noiseSrc.start();
   }
   function start(){ensure();if(ctx.state==='suspended')ctx.resume();started=true;
     master.gain.cancelScheduledValues(ctx.currentTime);
-    master.gain.linearRampToValueAtTime(opts.sound?0.5:0,ctx.currentTime+2);}
+    master.gain.linearRampToValueAtTime(0.62,ctx.currentTime+2);
+    if(opts.music)startMusic();}
+  // ---- 音效（连到 sfxGain）----
   function tone(freq,dur,type,vol){
     if(!ctx||!opts.sound)return;
     const o=ctx.createOscillator(),g=ctx.createGain();
@@ -991,16 +1086,12 @@ const Audio=(function(){
     g.gain.setValueAtTime(0,ctx.currentTime);
     g.gain.linearRampToValueAtTime(vol||0.18,ctx.currentTime+0.02);
     g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
-    o.connect(g);g.connect(master);o.start();o.stop(ctx.currentTime+dur+0.1);
+    o.connect(g);g.connect(sfxGain);o.start();o.stop(ctx.currentTime+dur+0.1);
   }
   function select(d){
     if(!started||!opts.sound)return;
     const base=planetFreq[d.id]||220;
-    // 和谐铃音
-    tone(base,1.4,'sine',0.16);
-    tone(base*1.5,1.1,'sine',0.09);
-    tone(base*2,0.9,'triangle',0.05);
-    // 短暂上扬的 pad
+    tone(base,1.4,'sine',0.16);tone(base*1.5,1.1,'sine',0.09);tone(base*2,0.9,'triangle',0.05);
     setTimeout(()=>tone(base*0.75,2.2,'sine',0.06),60);
   }
   function whoosh(){
@@ -1011,11 +1102,222 @@ const Audio=(function(){
     const f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(300,ctx.currentTime);
     f.frequency.exponentialRampToValueAtTime(1800,ctx.currentTime+0.5);f.Q.value=1.2;
     const g=ctx.createGain();g.gain.value=0.12;
-    s.connect(f);f.connect(g);g.connect(master);s.start();
+    s.connect(f);f.connect(g);g.connect(sfxGain);s.start();
   }
-  function setEnabled(on){if(!ctx)return;master.gain.linearRampToValueAtTime(on?0.5:0,ctx.currentTime+0.6);}
+  // ---- 手势音效 ----
+  function grab(){ if(!started)return; tone(523.25,0.5,'sine',0.12); setTimeout(()=>tone(784,0.55,'sine',0.07),45); bell(1046,0.05); }
+  function handOn(){ tone(587.33,0.45,'sine',0.07); setTimeout(()=>tone(880,0.6,'sine',0.05),70); }
+  function handOff(){ tone(440,0.4,'sine',0.05); setTimeout(()=>tone(330,0.5,'sine',0.04),60); }
+  function blip(){ tone(1320,0.1,'triangle',0.035); }
+  function clench(){ if(!started)return; tone(110,0.3,'sine',0.1); tone(146,0.25,'triangle',0.05); }
+  function zoomCue(dir){ // dir>0 推近, <0 拉远
+    if(!started||!opts.sound)return; const now=ctx?ctx.currentTime:0; if(now-lastZoom<0.18)return; lastZoom=now;
+    tone(dir>0?660:330,0.18,'sine',0.04);
+  }
+  // ---- 背景音乐（连到 musicGain → 干 + 混响）----
+  function bell(freq,vol){
+    if(!ctx)return;
+    const o=ctx.createOscillator(),o2=ctx.createOscillator(),g=ctx.createGain();
+    o.type='sine';o2.type='sine';o.frequency.value=freq;o2.frequency.value=freq*2.01;
+    g.gain.setValueAtTime(0,ctx.currentTime);g.gain.linearRampToValueAtTime(vol||0.05,ctx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0005,ctx.currentTime+2.6);
+    o.connect(g);o2.connect(g);g.connect(musicGain);o.start();o2.start();
+    o.stop(ctx.currentTime+2.7);o2.stop(ctx.currentTime+2.7);
+  }
+  function playChord(freqs){
+    const now=ctx.currentTime;
+    chordVoices.forEach(v=>{v.g.gain.cancelScheduledValues(now);v.g.gain.setTargetAtTime(0.0001,now,2.4);try{v.o.stop(now+7)}catch(e){}});
+    chordVoices=[];
+    freqs.forEach((f,i)=>{
+      const o=ctx.createOscillator();o.type=i%2?'triangle':'sine';o.frequency.value=f;o.detune.value=Math.random()*7-3.5;
+      const g=ctx.createGain();g.gain.value=0.0001;
+      const tgt=0.05/(1+i*0.25);
+      g.gain.setTargetAtTime(tgt,now,3.2);
+      o.connect(g);g.connect(musicGain);o.start();chordVoices.push({o,g});
+    });
+  }
+  function startMusic(){
+    if(!ctx||musicTimer)return;
+    curChord=0;playChord(CHORDS[0]);
+    musicGain.gain.cancelScheduledValues(ctx.currentTime);
+    musicGain.gain.setTargetAtTime(0.85,ctx.currentTime,3.5);
+    musicTimer=setInterval(()=>{curChord=(curChord+1)%CHORDS.length;playChord(CHORDS[curChord]);},11000);
+    arpTimer=setInterval(()=>{ if(!opts.music)return; const ch=CHORDS[curChord]; const f=ch[Math.floor(Math.random()*ch.length)]*(Math.random()<0.55?2:1); bell(f,0.035+Math.random()*0.025); },2300);
+  }
+  function setMusic(on){
+    if(!ctx)return;
+    if(on){ if(!musicTimer)startMusic(); else musicGain.gain.setTargetAtTime(0.85,ctx.currentTime,2); }
+    else{ musicGain.gain.setTargetAtTime(0.0001,ctx.currentTime,1.5); }
+  }
+  function setEnabled(on){if(!ctx)return;sfxGain.gain.linearRampToValueAtTime(on?1:0,ctx.currentTime+0.6);}
   function update(dt){}
-  return {start,select,whoosh,setEnabled,update};
+  return {start,select,whoosh,setEnabled,update,setMusic,grab,handOn,handOff,blip,clench,zoomCue};
+})();
+
+/* ============================================================
+   手势识别（MediaPipe Hands）+ 相机手势辅助
+   ============================================================ */
+const HAND_CONNECTIONS=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+const _v=new THREE.Vector3(),_pv=new THREE.Vector3(),_sph=new THREE.Spherical();
+function orbitBy(dTheta,dPhi){
+  _v.copy(camera.position).sub(controls.target);_sph.setFromVector3(_v);
+  _sph.theta-=dTheta;_sph.phi=THREE.MathUtils.clamp(_sph.phi-dPhi,0.12,Math.PI*0.95);
+  _v.setFromSpherical(_sph);camera.position.copy(controls.target).add(_v);
+}
+function zoomBy(factor){
+  _v.copy(camera.position).sub(controls.target);
+  const r=THREE.MathUtils.clamp(_v.length()*factor,controls.minDistance,controls.maxDistance);
+  _v.setLength(r);camera.position.copy(controls.target).add(_v);
+}
+function pickBodyScreen(sx,sy){
+  mouse.x=(sx/innerWidth)*2-1;mouse.y=-(sy/innerHeight)*2+1;
+  raycaster.setFromCamera(mouse,camera);
+  const hit=raycaster.intersectObjects(bodies.map(b=>b.mesh),false);
+  if(hit.length)return bodies.find(x=>x.mesh===hit[0].object);
+  // 回退：屏幕最近（带容差，方便手势瞄准）
+  let best=null,bestD=1e9;
+  bodies.forEach(b=>{
+    _pv.copy(b.worldPos).project(camera);if(_pv.z>1)return;
+    const px=(_pv.x*0.5+0.5)*innerWidth,py=(-_pv.y*0.5+0.5)*innerHeight;
+    const d=Math.hypot(px-sx,py-sy);
+    const distCam=camera.position.distanceTo(b.worldPos);
+    const sr=Math.max(28,(b.data.vr/distCam)*innerHeight*0.95);
+    if(d<sr&&d<bestD){bestD=d;best=b;}
+  });
+  return best;
+}
+let hoverRing=null;
+function ensureHoverRing(){
+  if(hoverRing)return;
+  const c=texCanvas(128,128),x=c.getContext('2d');
+  x.strokeStyle='rgba(120,255,180,0.95)';x.lineWidth=6;x.shadowColor='rgba(120,255,180,0.9)';x.shadowBlur=10;
+  x.beginPath();x.arc(64,64,52,0,7);x.stroke();
+  x.lineWidth=2;x.globalAlpha=0.55;x.beginPath();x.arc(64,64,40,0,7);x.stroke();
+  hoverRing=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false,blending:THREE.AdditiveBlending}));
+  hoverRing.visible=false;scene.add(hoverRing);
+}
+function showHoverRing(b){ensureHoverRing();hoverRing.visible=true;hoverRing.position.copy(b.worldPos);}
+function hideHoverRing(){if(hoverRing)hoverRing.visible=false;}
+
+const Gesture=(function(){
+  let enabled=false,ready=false,loading=false,hands=null,cam=null,video,canvas,cctx;
+  let handCount=0,mode='none',pulse=0;
+  let cursor={x:0.5,y:0.5,vis:false},orbitVel={x:0,y:0},zoomApply=null;
+  let prevPinch=false,prevFist=false,prevTwoDist=null,prevHandCount=0,hoverBody=null,lastHoverId=null;
+  const $=(id)=>document.getElementById(id);
+  const dist2=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  function setStatus(live,txt){$('gdot').classList.toggle('live',!!live);$('gstatusText').textContent=txt;}
+  function showLegend(){$('glegend').classList.add('show');}
+  function hideLegend(){$('glegend').classList.remove('show');}
+
+  async function enable(){
+    if(enabled)return;enabled=true;
+    $('gestureBtn').classList.add('active');$('ghud').classList.add('show');showLegend();
+    if(!ready&&!loading)await setup();
+    else if(cam){try{await cam.start();}catch(e){}setStatus(true,'手势就绪 · 张手移动');}
+  }
+  function disable(){
+    enabled=false;
+    $('gestureBtn').classList.remove('active');$('ghud').classList.remove('show');
+    $('reticle').classList.remove('show');hideHoverRing();hideLegend();
+    orbitVel.x=orbitVel.y=0;mode='none';
+    setStatus(false,'已暂停手势');
+    if(cam){try{cam.stop();}catch(e){}}
+  }
+  async function setup(){
+    loading=true;setStatus(false,'正在唤起摄像头…');
+    if(typeof Hands==='undefined'||typeof Camera==='undefined'){setStatus(false,'手势库未加载（需联网）');loading=false;return;}
+    video=$('gvideo');canvas=$('gcanvas');cctx=canvas.getContext('2d');
+    try{
+      hands=new Hands({locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${f}`});
+      hands.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:0.6,minTrackingConfidence:0.55});
+      hands.onResults(onResults);
+      cam=new Camera(video,{onFrame:async()=>{if(enabled)await hands.send({image:video});},width:480,height:360});
+      await cam.start();
+      ready=true;loading=false;setStatus(true,'手势就绪 · 张手移动');
+    }catch(e){loading=false;ready=false;setStatus(false,'摄像头不可用（请在浏览器允许权限）');try{if(cam)cam.stop();}catch(_){}console.warn('gesture setup',e);}
+  }
+  function classify(lm){
+    const scale=dist2(lm[0],lm[9])||1e-4;
+    const tips=[8,12,16,20],pips=[6,10,14,18],ext=[];
+    for(let i=0;i<4;i++)ext[i]=dist2(lm[tips[i]],lm[0])>dist2(lm[pips[i]],lm[0])*1.05;
+    const cnt=ext.filter(Boolean).length;
+    const pinch=dist2(lm[4],lm[8])/scale<0.55;
+    let g;
+    if(pinch)g='pinch';else if(cnt>=3)g='open';else if(cnt===0)g='fist';else g='point';
+    return g;
+  }
+  function onResults(res){
+    const hl=res.multiHandLandmarks||[];handCount=hl.length;
+    drawSkeleton(hl);
+    if(handCount>0&&prevHandCount===0)Audio.handOn();
+    if(handCount===0&&prevHandCount>0){Audio.handOff();mode='none';cursor.vis=false;orbitVel.x=orbitVel.y=0;prevPinch=prevFist=false;hoverBody=null;}
+    prevHandCount=handCount;
+    if(handCount===0){setStatus(true,'未检测到手');$('gmode').textContent='';prevTwoDist=null;return;}
+    // 双手 → 缩放
+    if(handCount>=2){
+      mode='zoom';
+      const dd=dist2(hl[0][9],hl[1][9]);
+      if(prevTwoDist!=null){
+        const ratio=THREE.MathUtils.clamp(prevTwoDist/dd,0.8,1.25);
+        if(Math.abs(ratio-1)>0.01){zoomApply=ratio;Audio.zoomCue(ratio<1?1:-1);}
+      }
+      prevTwoDist=dd;cursor.vis=false;$('reticle').classList.remove('show');orbitVel.x=orbitVel.y=0;
+      hoverBody=null;hideHoverRing();setStatus(true,'双手缩放');$('gmode').textContent='缩放';return;
+    }
+    prevTwoDist=null;
+    const lm=hl[0],g=classify(lm);mode=g;
+    const ix=1-lm[8].x,iy=lm[8].y;cursor.x=ix;cursor.y=iy;
+    $('gmode').textContent={open:'旋转',point:'瞄准',pinch:'选中',fist:'暂停'}[g]||'';
+    if(g==='open'){
+      const cx=1-lm[9].x,cy=lm[9].y,dz=0.12;
+      orbitVel.x=Math.abs(cx-0.5)>dz?(cx-0.5)*3.0:0;
+      orbitVel.y=Math.abs(cy-0.5)>dz?(cy-0.5)*2.4:0;
+      cursor.vis=false;$('reticle').classList.remove('show');hoverBody=null;hideHoverRing();
+      setStatus(true,'旋转环绕');
+    }else{
+      orbitVel.x=orbitVel.y=0;cursor.vis=true;
+      const b=pickBodyScreen(ix*innerWidth,iy*innerHeight);hoverBody=b;
+      if(b){if(lastHoverId!==b.data.id){Audio.blip();lastHoverId=b.data.id;}}else lastHoverId=null;
+      setStatus(true,g==='pinch'?'捏合选中':(b?'指向 '+b.data.name:'瞄准中'));
+    }
+    // 捏合上升沿 → 选中 / 返回全景
+    if(g==='pinch'&&!prevPinch){
+      if(hoverBody){selectBody(hoverBody.data.id);Audio.grab();}
+      else if(focus){focus=null;closePanel();
+        flying={fromCam:camera.position.clone(),toCam:new THREE.Vector3(0,90,210),fromTar:controls.target.clone(),toTar:new THREE.Vector3(0,0,0),t:0,dur:1.4};Audio.whoosh();}
+    }
+    prevPinch=(g==='pinch');
+    // 握拳上升沿 → 暂停切换
+    if(g==='fist'&&!prevFist){playing=!playing;$('playIcn').textContent=playing?'⏸':'▶';Audio.clench();}
+    prevFist=(g==='fist');
+  }
+  function drawSkeleton(hl){
+    if(!cctx)return;const W=canvas.width,H=canvas.height;cctx.clearRect(0,0,W,H);
+    hl.forEach((lm,hi)=>{
+      const col=hi===0?'#7db4ff':'#c89bff';
+      cctx.strokeStyle=col;cctx.lineWidth=2;cctx.shadowColor=col;cctx.shadowBlur=6;
+      HAND_CONNECTIONS.forEach(([a,b])=>{cctx.beginPath();cctx.moveTo((1-lm[a].x)*W,lm[a].y*H);cctx.lineTo((1-lm[b].x)*W,lm[b].y*H);cctx.stroke();});
+      cctx.fillStyle='#eaf2ff';
+      lm.forEach((p,i)=>{const r=(i===8||i===4)?3.5:2;cctx.beginPath();cctx.arc((1-p.x)*W,p.y*H,r,0,7);cctx.fill();});
+    });
+    cctx.shadowBlur=0;
+  }
+  function frame(dt){
+    if(ready&&!flying){
+      if(mode==='open'&&(orbitVel.x||orbitVel.y))orbitBy(orbitVel.x*dt,orbitVel.y*dt);
+      if(zoomApply){zoomBy(zoomApply);zoomApply=null;}
+    }
+    const R=$('reticle');
+    if(cursor.vis){
+      R.classList.add('show');
+      R.style.transform=`translate(${cursor.x*innerWidth}px,${cursor.y*innerHeight}px)`;
+      R.classList.toggle('pinch',mode==='pinch');R.classList.toggle('hot',!!hoverBody);
+    }else R.classList.remove('show');
+    if(hoverBody){showHoverRing(hoverBody);pulse+=dt*4;const s=Math.max(hoverBody.data.vr*3.4,6)*(1+Math.sin(pulse)*0.06);hoverRing.scale.set(s,s,1);}
+    else hideHoverRing();
+  }
+  return {get enabled(){return enabled;},get ready(){return ready;},enable,disable,frame,hideLegend};
 })();
 
 /* ============================================================
@@ -1051,8 +1353,12 @@ function bindUI(){
       if(k==='orbits')bodies.forEach(b=>{if(b.orbit)b.orbit.visible=opts.orbits;});
       if(k==='scale')applyScale();
       if(k==='sound')Audio.setEnabled(opts.sound);
+      if(k==='music')Audio.setMusic(opts.music);
     };
   });
+
+  document.getElementById('gestureBtn').onclick=()=>{ if(Gesture.enabled)Gesture.disable(); else Gesture.enable(); };
+  document.getElementById('glegendOk').onclick=()=>Gesture.hideLegend();
 }
 const REAL_AU={mercury:0.39,venus:0.72,earth:1,mars:1.52,jupiter:5.2,saturn:9.58,uranus:19.2,neptune:30.1,pluto:39.5};
 function applyScale(){
